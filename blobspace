@@ -1,0 +1,178 @@
+#!/usr/bin/env bash
+# blobspace: read Celestia's data layer straight from a node.
+#   blobspace quote <size|file>   what a payload costs on Celestia vs Ethereum blobs vs calldata
+#   blobspace shape               who is writing blobs right now, and what their blobs look like
+#   blobspace tail                every PayForBlobs as it lands
+set -euo pipefail
+
+ROOT=$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)
+. "$ROOT/lib/net.sh"
+. "$ROOT/lib/da.sh"
+
+JSON=0; BLOCKS=200; TOP=20; FROM=; GAS_PRICE=${GAS_PRICE:-}; NO_USD=0; PARALLEL=8
+COLOR=0; [[ -t 1 && -z ${NO_COLOR:-} ]] && COLOR=1
+
+usage() {
+  cat <<'EOF'
+usage: blobspace <command> [options]
+
+commands
+  quote <size|file>   price a payload on Celestia, Ethereum blobs and Ethereum calldata
+                      size: 4096, 250KB, 1.5MiB, 2GB ... or a path to a file
+  shape               namespaces in the last --blocks blocks: volume, blob shape, padding, fee per KB
+  tail                stream every PayForBlobs as blocks land (Ctrl-C to stop)
+
+options
+  --network mainnet|mocha   default mainnet
+  --rpc URL                 Celestia CometBFT RPC (your own node is best)
+  --eth-rpc URL             Ethereum JSON-RPC for quote
+  --gas-price UTIA          skip the on-chain gas price read
+  --blocks N                shape: window size (default 200)
+  --top N                   shape: rows to print (default 20)
+  --from HEIGHT             tail: start here instead of the chain head
+  --no-usd                  quote: don't fetch prices
+  --json                    machine-readable output (quote, shape)
+EOF
+}
+
+# ---------- quote ----------
+parse_size() {
+  awk -v s="$1" 'BEGIN {
+    if (!match(s, /^[0-9]+(\.[0-9]+)?/)) exit 1
+    n = substr(s, 1, RLENGTH); u = toupper(substr(s, RLENGTH + 1))
+    m[""] = 1; m["B"] = 1
+    m["K"] = 1e3; m["KB"] = 1e3; m["KIB"] = 1024
+    m["M"] = 1e6; m["MB"] = 1e6; m["MIB"] = 1048576
+    m["G"] = 1e9; m["GB"] = 1e9; m["GIB"] = 1073741824
+    if (!(u in m)) exit 1
+    printf "%.0f\n", n * m[u]
+  }'
+}
+
+cmd_quote() {
+  local arg=${1:-} bytes
+  [[ -n $arg ]] || die "usage: blobspace quote <size|file>"
+  if [[ -f $arg ]]; then bytes=$(wc -c < "$arg" | tr -d ' ')
+  else bytes=$(parse_size "$arg") || die "can't read size '$arg' (try 4096, 250KB, 1.5MiB)"; fi
+  (( bytes > 0 )) || die "size must be above zero"
+
+  # one blob per PFB, PFBs of at most MAX_PFB_BYTES
+  local gas=0 shares=0 npfb=0 left=$bytes s
+  while (( left > 0 )); do
+    s=$(( left < MAX_PFB_BYTES ? left : MAX_PFB_BYTES ))
+    gas=$(( gas + $(pfb_gas "$s") )); shares=$(( shares + $(shares_for "$s") )); npfb=$(( npfb + 1 ))
+    left=$(( left - s ))
+  done
+
+  local gp base= tip= bf= glim= block tia= eth= p
+  gp=$(celestia_gas_price)
+  if block=$(eth_rpc eth_getBlockByNumber '["latest",false]' 2>/dev/null); then
+    base=$(printf '%d' "$(jq -r .baseFeePerGas <<< "$block")")
+    glim=$(printf '%d' "$(jq -r .gasLimit <<< "$block")")
+    bf=$(printf '%d' "$(eth_rpc eth_blobBaseFee | jq -r .)")
+    tip=$(printf '%d' "$(eth_rpc eth_maxPriorityFeePerGas | jq -r .)")
+  fi
+  if (( ! NO_USD )); then
+    p=$(usd_prices)
+    if [[ -n $p ]]; then read -r tia eth <<< "$p"; fi
+  fi
+
+  awk -v b="$bytes" -v sh="$shares" -v cg="$gas" -v npfb="$npfb" -v gp="$gp" -v net="$NETWORK" \
+      -v base="$base" -v tip="$tip" -v bf="$bf" -v glim="$glim" -v tia="${tia:-}" -v eth="${eth:-}" -v json="$JSON" \
+      -f "$ROOT/lib/fmt.awk" -f "$ROOT/lib/quote.awk"
+}
+
+# ---------- shape ----------
+cmd_shape() {
+  local top from tmp got f
+  top=$(latest_height); from=$(( top - BLOCKS + 1 ))
+  tmp=$(mktemp -d); trap "rm -rf '$tmp'" EXIT
+  seq "$from" "$top" | xargs -P "$PARALLEL" -I{} \
+    curl -fsS --retry 2 --max-time 20 -o "$tmp/{}.json" "$RPC/block_results?height={}" 2>/dev/null || true
+  got=0
+  for f in "$tmp"/*.json; do                      # one jq per block, so a truncated response only loses that block
+    [[ -s $f ]] && jq -c -f "$ROOT/lib/pfb.jq" "$f" 2>/dev/null >> "$tmp/blobs.ndjson" && got=$(( got + 1 ))
+  done
+  (( got > 0 )) || die "no block_results fetched from $RPC"
+  touch "$tmp/blobs.ndjson"
+
+  jq -rs 'group_by(.ns)
+        | map({ ns: .[0].ns,
+                blobs: length,
+                bytes: (map(.size) | add),
+                capacity: (map(if .size <= 478 then 478 else 478 + 482 * (((.size - 478 + 481) / 482) | floor) end) | add),
+                fee: (map(.fee_utia) | add),
+                signers: (map(.signer) | unique | length),
+                pfbs: (map("\(.height)/\(.tx)") | unique | length) })
+        | sort_by(-.bytes)[]
+        | [.ns, .blobs, .bytes, .capacity, .fee, .signers, .pfbs] | @tsv' "$tmp/blobs.ndjson" \
+    | while IFS=$'\t' read -r ns rest; do printf '%s\t%s\t%s\n' "$(ns_label "$ns")" "$ns" "$rest"; done \
+    > "$tmp/rows.tsv"
+
+  if (( JSON )); then
+    jq -Rn --arg net "$NETWORK" --argjson from "$from" --argjson to "$top" --argjson got "$got" '
+      [inputs | split("\t") | {namespace: .[0], namespace_b64: .[1], blobs: (.[2]|tonumber), bytes: (.[3]|tonumber),
+        avg_blob: ((.[3]|tonumber) / (.[2]|tonumber)), padding: (1 - (.[3]|tonumber) / (.[4]|tonumber)),
+        fee_utia: (.[5]|tonumber), signers: (.[6]|tonumber), pfbs: (.[7]|tonumber)}]
+      | {network: $net, from: $from, to: $to, blocks_sampled: $got, namespaces: .}' < "$tmp/rows.tsv"
+  else
+    awk -v net="$NETWORK" -v from="$from" -v to="$top" -v got="$got" -v top="$TOP" -v color="$COLOR" \
+        -f "$ROOT/lib/fmt.awk" -f "$ROOT/lib/shape.awk" < "$tmp/rows.tsv"
+  fi
+}
+
+# ---------- tail ----------
+cmd_tail() {
+  local next head br rows dim= off=
+  (( COLOR )) && { dim=$'\033[2m'; off=$'\033[0m'; }
+  next=${FROM:-$(latest_height)}
+  printf '%s  following celestia %s from #%s via %s%s\n' "$dim" "$NETWORK" "$next" "$RPC" "$off"
+  while :; do
+    head=$(latest_height 2>/dev/null) || { sleep 2; continue; }
+    while (( next <= head )); do
+      br=$(rpc_get "block_results?height=$next") || break      # node hiccup: retry this height next round
+      rows=$(jq -c -f "$ROOT/lib/pfb.jq" <<< "$br" \
+        | jq -rs 'group_by([.tx, .ns])[]
+            | [.[0].height, .[0].ns, length, (map(.size) | add), (map(.fee_utia) | add),
+               (map(if .size <= 478 then 478 else 478 + 482 * (((.size - 478 + 481) / 482) | floor) end) | add)] | @tsv' || true)
+      if [[ -z $rows ]]; then
+        printf '%s#%s  ·%s\n' "$dim" "$next" "$off"
+      else
+        while IFS=$'\t' read -r h ns rest; do printf '%s\t%s\t%s\n' "$h" "$(ns_label "$ns")" "$rest"; done <<< "$rows" \
+          | awk -f "$ROOT/lib/fmt.awk" -f "$ROOT/lib/tail.awk"
+      fi
+      next=$(( next + 1 ))
+    done
+    sleep 2
+  done
+}
+
+# ---------- main ----------
+CMD=; ARGS=()
+while (( $# )); do
+  case $1 in
+    --network)   NETWORK=$2; shift ;;
+    --rpc)       RPC=$2; shift ;;
+    --eth-rpc)   ETH_RPC=$2; shift ;;
+    --gas-price) GAS_PRICE=$2; shift ;;
+    --blocks)    BLOCKS=$2; shift ;;
+    --top)       TOP=$2; shift ;;
+    --from)      FROM=$2; shift ;;
+    --no-usd)    NO_USD=1 ;;
+    --json)      JSON=1 ;;
+    -h|--help)   usage; exit 0 ;;
+    -*)          die "unknown option $1" ;;
+    *)           if [[ -z $CMD ]]; then CMD=$1; else ARGS+=("$1"); fi ;;
+  esac
+  shift
+done
+
+need curl jq awk base64 od
+set_network
+case ${CMD:-} in
+  quote) cmd_quote "${ARGS[@]:-}" ;;
+  shape) cmd_shape ;;
+  tail)  cmd_tail ;;
+  ''|help) usage ;;
+  *) die "unknown command '$CMD' (quote | shape | tail)" ;;
+esac
