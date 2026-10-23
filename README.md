@@ -10,6 +10,7 @@ It needs no API key and no indexer. Everything comes from CometBFT RPC (`/status
 
 ```bash
 git clone https://github.com/Prisma-Chain/blobspace && cd blobspace
+chmod +x blobspace
 ./blobspace quote 1MB
 ```
 
