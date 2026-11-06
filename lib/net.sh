@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Endpoints and fetch helpers. Every default can be overridden with a flag or env var.
 
 NETWORK=${BLOBSPACE_NETWORK:-mainnet}

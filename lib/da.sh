@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Celestia share and PayForBlobs gas math.
 # Mirrors celestia-app x/blob: DefaultEstimateGas = GasToConsume + TxSizeCostPerByte * BytesPerBlobInfo * blobs + PFBGasFixedCost.
 
