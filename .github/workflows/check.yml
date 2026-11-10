@@ -1,0 +1,37 @@
+name: check
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        run: shellcheck -x -S error blobspace lib/*.sh scripts/*.sh
+
+  smoke:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        network: [mainnet, mocha]
+    steps:
+      - uses: actions/checkout@v4
+      - run: chmod +x blobspace
+
+      - name: quote
+        run: |
+          ./blobspace quote 1MB --network ${{ matrix.network }}
+          ./blobspace quote 1MB --network ${{ matrix.network }} --json | jq -e '.celestia.gas > 0 and .celestia.shares == 2075'
+
+      - name: shape
+        run: |
+          ./blobspace shape --network ${{ matrix.network }} --blocks 30
+          ./blobspace shape --network ${{ matrix.network }} --blocks 30 --json | jq -e '.blocks_sampled > 0'
+
+      - name: tail (25 seconds)
+        run: timeout 25 ./blobspace tail --network ${{ matrix.network }} || [ $? -eq 124 ]
