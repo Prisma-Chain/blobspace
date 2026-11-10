@@ -9,9 +9,11 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: shellcheck
-        run: shellcheck -x -S error blobspace lib/*.sh scripts/*.sh
+        run: |
+          shopt -s nullglob
+          shellcheck -x -S error blobspace lib/*.sh scripts/*.sh
 
   smoke:
     runs-on: ubuntu-latest
@@ -20,7 +22,7 @@ jobs:
       matrix:
         network: [mainnet, mocha]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: chmod +x blobspace
 
       - name: quote
