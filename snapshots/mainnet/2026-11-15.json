@@ -1,0 +1,257 @@
+{
+  "day": "2026-11-15",
+  "shape": {
+    "network": "mainnet",
+    "from": 15916804,
+    "to": 15917403,
+    "blocks_sampled": 600,
+    "namespaces": [
+      {
+        "namespace": "lightlink",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAABsaWdodGxpbms=",
+        "blobs": 18,
+        "bytes": 21940063,
+        "avg_blob": 1218892.388888889,
+        "padding": 0.00022068902915328703,
+        "fee_utia": 751407,
+        "signers": 1,
+        "pfbs": 18
+      },
+      {
+        "namespace": "eclipse",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAGVjbGlwc2U=",
+        "blobs": 4860,
+        "bytes": 12980756,
+        "avg_blob": 2670.937448559671,
+        "padding": 0.07525543334155438,
+        "fee_utia": 515775.99999999517,
+        "signers": 1,
+        "pfbs": 81
+      },
+      {
+        "namespace": "48ebd3411d6431afa0c5",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAEjr00EdZDGvoMU=",
+        "blobs": 963,
+        "bytes": 12769982,
+        "avg_blob": 13260.6251298027,
+        "padding": 0.019767261562080196,
+        "fee_utia": 488923.0000000004,
+        "signers": 1,
+        "pfbs": 144
+      },
+      {
+        "namespace": "e46be6c46b561c088e65",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAORr5sRrVhwIjmU=",
+        "blobs": 17082,
+        "bytes": 6422832,
+        "avg_blob": 376,
+        "padding": 0.21338912133891208,
+        "fee_utia": 335513.00000003085,
+        "signers": 1,
+        "pfbs": 26
+      },
+      {
+        "namespace": "relay-data",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAHJlbGF5LWRhdGE=",
+        "blobs": 600,
+        "bytes": 4514336,
+        "avg_blob": 7523.893333333333,
+        "padding": 0.03792271560946914,
+        "fee_utia": 307746,
+        "signers": 1,
+        "pfbs": 600
+      },
+      {
+        "namespace": "3a85be721883eab074bf",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAADqFvnIYg+qwdL8=",
+        "blobs": 6811,
+        "bytes": 2581369,
+        "avg_blob": 379,
+        "padding": 0.20711297071129708,
+        "fee_utia": 160992.9999999925,
+        "signers": 1,
+        "pfbs": 101
+      },
+      {
+        "namespace": "46023b2bfb8ba6dc6fdc",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAEYCOyv7i6bcb9w=",
+        "blobs": 6,
+        "bytes": 1165161,
+        "avg_blob": 194193.5,
+        "padding": 0.0014885619822812002,
+        "fee_utia": 44950,
+        "signers": 2,
+        "pfbs": 6
+      },
+      {
+        "namespace": "0dee3773755098fc",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAADe43c3VQmPw=",
+        "blobs": 5,
+        "bytes": 598548,
+        "avg_blob": 119709.6,
+        "padding": 0.0009313877677740168,
+        "fee_utia": 21883,
+        "signers": 1,
+        "pfbs": 5
+      },
+      {
+        "namespace": "29c64dc5dca4a4677a77",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAACnGTcXcpKRnenc=",
+        "blobs": 1313,
+        "bytes": 492375,
+        "avg_blob": 375,
+        "padding": 0.2154811715481172,
+        "fee_utia": 70269.99999999978,
+        "signers": 1,
+        "pfbs": 150
+      },
+      {
+        "namespace": "0584cb53884b3945",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAABYTLU4hLOUU=",
+        "blobs": 1,
+        "bytes": 462437,
+        "avg_blob": 462437,
+        "padding": 0.0006029616438593122,
+        "fee_utia": 16032,
+        "signers": 1,
+        "pfbs": 1
+      },
+      {
+        "namespace": "ca1de12a2bf10ef20a85",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAMod4Sor8Q7yCoU=",
+        "blobs": 1,
+        "bytes": 318577,
+        "avg_blob": 318577,
+        "padding": 0.00006591378476950016,
+        "fee_utia": 11133,
+        "signers": 1,
+        "pfbs": 1
+      },
+      {
+        "namespace": "daproxtest",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAGRhcHJveHRlc3Q=",
+        "blobs": 285,
+        "bytes": 291840,
+        "avg_blob": 1024,
+        "padding": 0.289875173370319,
+        "fee_utia": 78090,
+        "signers": 1,
+        "pfbs": 285
+      },
+      {
+        "namespace": "0c9e1872060f7f0bf984",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAAyeGHIGD38L+YQ=",
+        "blobs": 17,
+        "bytes": 251230,
+        "avg_blob": 14778.235294117647,
+        "padding": 0.016296516727227206,
+        "fee_utia": 6926,
+        "signers": 1,
+        "pfbs": 17
+      },
+      {
+        "namespace": "relay-dev1",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAHJlbGF5LWRldjE=",
+        "blobs": 600,
+        "bytes": 130160,
+        "avg_blob": 216.93333333333334,
+        "padding": 0.6811866831266044,
+        "fee_utia": 147336,
+        "signers": 1,
+        "pfbs": 600
+      },
+      {
+        "namespace": "866269ddf77dbc40ed9d",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAIZiad33fbxA7Z0=",
+        "blobs": 4,
+        "bytes": 121111,
+        "avg_blob": 30277.75,
+        "padding": 0.010628043002320009,
+        "fee_utia": 5375,
+        "signers": 1,
+        "pfbs": 4
+      },
+      {
+        "namespace": "40962f5cee652097ccab",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAECWL1zuZSCXzKs=",
+        "blobs": 74,
+        "bytes": 46264,
+        "avg_blob": 625.1891891891892,
+        "padding": 0.3487612612612613,
+        "fee_utia": 16159,
+        "signers": 1,
+        "pfbs": 45
+      },
+      {
+        "namespace": "0a312b9016d7ca3339b6",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAAoxK5AW18ozObY=",
+        "blobs": 20,
+        "bytes": 17753,
+        "avg_blob": 887.65,
+        "padding": 0.17848218417399353,
+        "fee_utia": 2896,
+        "signers": 1,
+        "pfbs": 7
+      },
+      {
+        "namespace": "483621fd901b2ab86514",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAEg2If2QGyq4ZRQ=",
+        "blobs": 2,
+        "bytes": 10680,
+        "avg_blob": 5340,
+        "padding": 0.07612456747404839,
+        "fee_utia": 988,
+        "signers": 1,
+        "pfbs": 2
+      },
+      {
+        "namespace": "solaxy-sov",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAHNvbGF4eS1zb3Y=",
+        "blobs": 600,
+        "bytes": 7800,
+        "avg_blob": 13,
+        "padding": 0.9728033472803347,
+        "fee_utia": 185410,
+        "signers": 1,
+        "pfbs": 600
+      },
+      {
+        "namespace": "7b00000000000001e4",
+        "namespace_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAAB7AAAAAAAAAeQ=",
+        "blobs": 7,
+        "bytes": 3431,
+        "avg_blob": 490.14285714285717,
+        "padding": 0.4499839692209041,
+        "fee_utia": 2336,
+        "signers": 1,
+        "pfbs": 7
+      }
+    ]
+  },
+  "quote_1mb": {
+    "bytes": 1000000,
+    "network": "mainnet",
+    "celestia": {
+      "pfbs": 1,
+      "shares": 2075,
+      "gas": 8574900,
+      "gas_price_utia": 0.004003,
+      "fee_tia": 0.034326,
+      "usd": 0.012399
+    },
+    "ethereum_blobs": {
+      "blobs": 8,
+      "blob_gas": 1048576,
+      "blob_base_fee_wei": 10870153,
+      "fee_eth": 0.000019638813,
+      "usd": 0.036050
+    },
+    "ethereum_calldata": {
+      "gas": 40021000,
+      "blocks": 1,
+      "base_fee_wei": 196185670,
+      "fee_eth": 0.007852340476,
+      "usd": 14.413992
+    }
+  }
+}
